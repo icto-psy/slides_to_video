@@ -6,8 +6,14 @@ library(tidyverse)
 library(xml2)
 library(stringr)
 
+# Specify the path to unzipped mediasite folder
+path_to_unzipped_mediasite_folder <- "../../Movies/wsrLectures/Wetenschappelijk & Statistisch Redeneren incl. Tes.p2g/"
+
+# Specify output folder
+path_output <- "../../Movies/wsrLectures/Wetenschappelijk & Statistisch Redeneren incl. Tes.p2g/"
+
 # Load the xml file containing the meta information. (Needs to be specified)
-data <- read_xml("input/MediasitePresentation_70.xml")
+data <- read_xml(paste0(path_to_unzipped_mediasite_folder,"MediasitePresentation_70.xml"))
 
 # Get the slide onset times (in milliseconds)
 slide_time_vec <-
@@ -18,7 +24,7 @@ video_time <-
   data %>% xml_find_all(xpath = "//PresentationContent/Length") %>% xml_text() %>% as.numeric()
 
 # Specify the path to the images/content 
-path_to_content <- "input/Content/"
+path_to_content <- paste0(path_to_unzipped_mediasite_folder,"Content/")
 
 image_paths <-
   list.files(path_to_content, pattern = "slide_[0-9]{4}_full.jpg", full.names = TRUE) 
@@ -68,9 +74,13 @@ write.table(
 # Run ffmpeg.
 system2(command = "ffmpeg",
         args = list("-f concat ",
+                    "-safe 0 ",
                     "-i input.txt",
                     "out.mp4"))
 
+# Move output to specified folder
+file.copy("out.mp4", path_output)
+
 ## Remove input.txt, leaving a clean workspace. 
-file.remove("input.txt")
+file.remove(c("input.txt", "out.mp4"))
 
