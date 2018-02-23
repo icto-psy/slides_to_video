@@ -12,6 +12,8 @@ path_to_unzipped_mediasite_folder <- "../../Movies/wsrLectures/Wetenschappelijk 
 # Specify output folder
 path_output <- "../../Movies/wsrLectures/Wetenschappelijk & Statistisch Redeneren incl. Tes.p2g/"
 
+
+
 # Load the xml file containing the meta information. (Needs to be specified)
 data <- read_xml(paste0(path_to_unzipped_mediasite_folder,"MediasitePresentation_70.xml"))
 
@@ -24,11 +26,14 @@ video_time <-
   data %>% xml_find_all(xpath = "//PresentationContent/Length") %>% xml_text() %>% as.numeric()
 
 # Specify the path to the images/content 
-path_to_content <- paste0(path_to_unzipped_mediasite_folder,"Content/")
+path_to_content <- paste0(path_to_unzipped_mediasite_folder,"ContentPNG/")
 
 image_paths <-
   list.files(path_to_content, pattern = "slide_[0-9]{4}_full.jpg", full.names = TRUE) 
 
+# Debug mode - shorten render
+# image_paths <- image_paths[1:100]
+  
 # Write input.txt file, that is used for ffmpeg conversion
 slide_duration_vec <- numeric(length(slide_time_vec))
 
@@ -75,7 +80,9 @@ write.table(
 system2(command = "ffmpeg",
         args = list("-f concat ",
                     "-safe 0 ",
-                    "-i input.txt",
+                    "-i input.txt ",
+                    #"-pix_fmt rgb24 ",                # Extra for mac
+                    #"-c:v libx264 -pix_fmt yuv420p ", # Extra for mac
                     "out.mp4"))
 
 # Move output to specified folder
