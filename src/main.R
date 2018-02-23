@@ -31,6 +31,8 @@ path_to_content <- paste0(path_to_unzipped_mediasite_folder,"Content/")
 image_paths <-
   list.files(path_to_content, pattern = "slide_[0-9]{4}_full.jpg", full.names = TRUE) 
 
+# Add jpg to png conversion for mac here.
+
 # Debug mode - shorten render
 image_paths <- image_paths[1:100]
   
@@ -48,8 +50,8 @@ for(i in 2:length(slide_time_vec)) {
 
 ## Set the duration of the last slide to be the difference between the total length of the presentation video and 
 ## the last slide duration. This causes the last slide to be shown to the very end of the presentation. 
-# slide_duration_vec[length(slide_duration_vec)] <-
-#   video_time - slide_time_vec[length(slide_time_vec)]
+slide_duration_vec[length(slide_duration_vec)] <-
+  video_time - slide_time_vec[length(slide_time_vec)]
 
 ## Convert to seconds.
 slide_duration_vec <- slide_duration_vec / 1000
@@ -82,7 +84,7 @@ system2(command = "ffmpeg",
                     "-safe 0 ",
                     "-i input.txt ",
                     # "-pix_fmt rgb24 ",                # Extra for mac
-                    "-c:v libx264 -pix_fmt yuv410p ", # Extra for mac
+                    # "-c:v libx264 -pix_fmt yuv410p ", # Extra for mac
                     "out.mp4"))
 
 # Move output to specified folder
