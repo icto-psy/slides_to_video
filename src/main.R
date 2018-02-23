@@ -26,7 +26,7 @@ video_time <-
   data %>% xml_find_all(xpath = "//PresentationContent/Length") %>% xml_text() %>% as.numeric()
 
 # Specify the path to the images/content 
-path_to_content <- paste0(path_to_unzipped_mediasite_folder,"ContentPNG/")
+path_to_content <- paste0(path_to_unzipped_mediasite_folder,"Content/")
 
 image_paths <-
   list.files(path_to_content, pattern = "slide_[0-9]{4}_full.jpg", full.names = TRUE) 
