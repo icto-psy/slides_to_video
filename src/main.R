@@ -2,9 +2,11 @@
 ## The conversion from jpeg to mp4 uses ffmpeg, which needs to be installed before running the script.
 ## See https://ffmpeg.zeranoe.com/builds/ for more information. 
 
-library(tidyverse)
-library(xml2)
-library(stringr)
+library('tidyverse')
+library('xml2')
+library('stringr')
+library('png')
+library('jpeg')
 
 # Specify the path to unzipped mediasite folder
 path_to_unzipped_mediasite_folder <- "../../Movies/wsrLectures/Wetenschappelijk & Statistisch Redeneren incl. Tes.p2g/"
@@ -12,7 +14,9 @@ path_to_unzipped_mediasite_folder <- "../../Movies/wsrLectures/Wetenschappelijk 
 # Specify output folder
 path_output <- "../../Movies/wsrLectures/Wetenschappelijk & Statistisch Redeneren incl. Tes.p2g/"
 
-
+# --------------------------
+# Start conversion process
+# --------------------------
 
 # Load the xml file containing the meta information. (Needs to be specified)
 data <- read_xml(paste0(path_to_unzipped_mediasite_folder,"MediasitePresentation_70.xml"))
@@ -31,10 +35,24 @@ path_to_content <- paste0(path_to_unzipped_mediasite_folder,"Content/")
 image_paths <-
   list.files(path_to_content, pattern = "slide_[0-9]{4}_full.jpg", full.names = TRUE) 
 
-# Add jpg to png conversion for mac here.
+## Add jpg to png conversion for mac here.
+# Create folder for PNG images
+if(!dir.exists("images")) dir.create('images')
+
+for (i in 1:length(image_paths)) {
+
+  # Read jpeg
+  img <- readJPEG(image_paths[i])
+  
+  # write png
+  writePNG(img, target = gsub("jpg","png",image_paths)[i]  )
+
+}
+
+image_paths <- gsub("jpg","png",image_paths)
 
 # Debug mode - shorten render
-image_paths <- image_paths[1:100]
+# image_paths <- image_paths[1:100]
   
 # Write input.txt file, that is used for ffmpeg conversion
 slide_duration_vec <- numeric(length(slide_time_vec))
@@ -84,7 +102,7 @@ system2(command = "ffmpeg",
                     "-safe 0 ",
                     "-i input.txt ",
                     # "-pix_fmt rgb24 ",                # Extra for mac
-                    # "-c:v libx264 -pix_fmt yuv410p ", # Extra for mac
+                    "-c:v libx264 -pix_fmt yuv410p ", # Extra for mac
                     "out.mp4"))
 
 # Move output to specified folder
