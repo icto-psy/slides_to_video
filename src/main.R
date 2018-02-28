@@ -1,4 +1,4 @@
-## This script converts the slides in a webcollege export file to a continuous video file. 
+## This script converts the slides in a webcollege/mediasite export file to a continuous video file. 
 ## The conversion from jpeg to mp4 uses ffmpeg, which needs to be installed before running the script.
 ## See https://ffmpeg.zeranoe.com/builds/ for more information. 
 
@@ -7,12 +7,18 @@ library('xml2')
 library('stringr')
 library('png')
 library('jpeg')
+# ------------------------
+# INPUT VARIABLES
+# ------------------------
 
 # Specify the path to unzipped mediasite folder
-path_to_unzipped_mediasite_folder <- "../../Movies/wsrLectures/Wetenschappelijk & Statistisch Redeneren incl. Tes.p2g/"
+path_to_unzipped_mediasite_folder <- "input/"
 
 # Specify output folder
-path_output <- "../../Movies/wsrLectures/Wetenschappelijk & Statistisch Redeneren incl. Tes.p2g/"
+path_output <- "tmp/"
+
+# Specify if you want to first convert to PNG (for mac) or stay with Jpeg
+convert_to_png <- FALSE
 
 # --------------------------
 # Start conversion process
@@ -35,21 +41,23 @@ path_to_content <- paste0(path_to_unzipped_mediasite_folder,"Content/")
 image_paths <-
   list.files(path_to_content, pattern = "slide_[0-9]{4}_full.jpg", full.names = TRUE) 
 
-## Add jpg to png conversion for mac here.
+# JPG to PNG Conversion
 # Create folder for PNG images
-if(!dir.exists("images")) dir.create('images')
+if(convert_to_png) {
+  if(!dir.exists("tmp")) dir.create('tmp')
 
-for (i in 1:length(image_paths)) {
-
-  # Read jpeg
-  img <- readJPEG(image_paths[i])
+  for (i in 1:length(image_paths)) {
+    
+    # Read jpeg
+    img <- readJPEG(image_paths[i])
+    
+    # write png
+    writePNG(img, target = sprintf("tmp/slide_%.4d_full.png",i))
+  }
   
-  # write png
-  writePNG(img, target = gsub("jpg","png",image_paths)[i]  )
-
+  image_paths <-
+    list.files("tmp/", pattern = "slide_[0-9]{4}_full.png", full.names = TRUE)
 }
-
-image_paths <- gsub("jpg","png",image_paths)
 
 # Debug mode - shorten render
 # image_paths <- image_paths[1:100]
@@ -101,7 +109,6 @@ system2(command = "ffmpeg",
         args = list("-f concat ",
                     "-safe 0 ",
                     "-i input.txt ",
-                    # "-pix_fmt rgb24 ",                # Extra for mac
                     "-c:v libx264 -pix_fmt yuv410p ", # Extra for mac
                     "out.mp4"))
 
@@ -111,3 +118,5 @@ file.copy("out.mp4", path_output)
 ## Remove input.txt, leaving a clean workspace. 
 file.remove(c("input.txt", "out.mp4"))
 
+# Remove the png images if needed. 
+if(convert_to_png) file.remove(image_paths)
